@@ -219,6 +219,7 @@ public class MotionEditor : MonoBehaviour {
 		string[] assets = AssetDatabase.FindAssets("t:MotionData", new string[1]{Folder});
 		Files = new MotionData[assets.Length];
 		for(int i=0; i<assets.Length; i++) {
+			Debug.Log(assets[i]);
 			Files[i] = (MotionData)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(assets[i]), typeof(MotionData));
 		}
 	}

@@ -118,6 +118,7 @@ public class ContactModule : Module {
 	}
 
 	public Sensor AddSensor(string bone) {
+		Debug.Log(bone);
 		return AddSensor(bone, Vector3.zero, 0.1f, 0f, 0f);
 	}
 

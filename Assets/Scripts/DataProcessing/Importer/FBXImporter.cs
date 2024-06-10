@@ -49,6 +49,7 @@ public class FBXImporter : EditorWindow {
 
 				if(!Importing) {
 					if(Utility.GUIButton("Import Motion Data", UltiDraw.DarkGrey, UltiDraw.White)) {
+						
 						this.StartCoroutine(ImportMotionData());
 					}
 				} else {
@@ -140,14 +141,24 @@ public class FBXImporter : EditorWindow {
 		if(Directory.Exists(source)) {
 			DirectoryInfo info = new DirectoryInfo(source);
 			FileInfo[] items = info.GetFiles();
+			Debug.Log(source);
+			Debug.Log("itm count " +  items.Length);
 			List<File> files = new List<File>();
 			for(int i=0; i<items.Length; i++) {
-				string path = items[i].FullName.Substring(items[i].FullName.IndexOf("Assets/"));
+				Debug.Log(items[i].FullName);
+				
+				string path = items[i].FullName.Substring(items[i].FullName.IndexOf("Assets\\"));
+				
 				if((AnimationClip)AssetDatabase.LoadAssetAtPath(path, typeof(AnimationClip))) {
+					Debug.Log("anim clip found");
 					File file = new File();
 					file.Object = (GameObject)AssetDatabase.LoadAssetAtPath(path, typeof(GameObject));
 					file.Import = true;
 					files.Add(file);
+				}
+				else
+				{
+					Debug.Log(path);
 				}
 			}
 			Files = files.ToArray();
@@ -179,18 +190,20 @@ public class FBXImporter : EditorWindow {
 		} else if(!AssetDatabase.IsValidFolder(destination)) {
 			Debug.Log("Folder " + "'" + destination + "'" + " is not valid.");
 		} else {
+			
 			Importing = true;
 			Character.transform.position = Vector3.zero;
 			Character.transform.rotation = Quaternion.identity;
 			for(int f=0; f<Files.Length; f++) {
-				if(Files[f].Import) {
+                Debug.Log("importin" + Files.Length);
+                if (Files[f].Import) {
 					if(!Directory.Exists(destination+"/"+Files[f].Object.name) ) {
 						AssetDatabase.CreateFolder(destination, Files[f].Object.name);
 						MotionData data = ScriptableObject.CreateInstance<MotionData>();
 						data.name = "Data";
 						AssetDatabase.CreateAsset(data, destination+"/"+Files[f].Object.name+"/"+data.name+".asset");
 						AnimationClip clip = (AnimationClip)AssetDatabase.LoadAssetAtPath(AssetDatabase.GetAssetPath(Files[f].Object), typeof(AnimationClip));
-
+						Debug.Log("hi");
 						//Create Source Data
 						data.Source = new MotionData.Hierarchy();
 						for(int i=0; i<Character.Bones.Length; i++) {
@@ -218,23 +231,24 @@ public class FBXImporter : EditorWindow {
 						//Add Scene
 						data.CreateScene();
 						data.AddSequence();
-						//M: skip the T-Pose
-						data.Sequences[0].Start = 60;
+                        //M: skip the T-Pose
+                        //data.Sequences[0].Start = 60;
 
 
-						////Add Modules
-						//data.AddModule(Module.ID.TimeSeries);
-						//data.AddModule(Module.ID.Root);
-						//data.AddModule(Module.ID.Style);
-						//data.AddModule(Module.ID.Goal);
-						//data.AddModule(Module.ID.Phase);
-						//data.AddModule(Module.ID.Contact);
-						//data.AddModule(Module.ID.CylinderMap);
+                        ////Add Modules
+                        data.AddModule(Module.ID.TimeSeries);
+                        data.AddModule(Module.ID.Root);
+                        data.AddModule(Module.ID.Contact);
+                        data.AddModule(Module.ID.Goal);
+                       //data.AddModule(Module.ID.Phase);
+                      
+                        data.AddModule(Module.ID.Style);
+                        data.AddModule(Module.ID.CylinderMap);
 
 
 
 
-						EditorUtility.SetDirty(data);
+                        EditorUtility.SetDirty(data);
 					} else {
 						Debug.Log("File with name " + Files[f].Object.name + " already exists.");
 					}
